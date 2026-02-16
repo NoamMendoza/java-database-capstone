@@ -1,8 +1,11 @@
 // index.js
 
-import { API_BASE_URL } from './config/config.js';
+const API_BASE_URL = "";
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("Index.js loaded - DOMContentLoaded fired");
+    // alert("Index.js loaded!"); // Uncomment if needed for extreme debugging
+
     const modal = document.getElementById('login-modal');
     const closeBtn = document.querySelector('.close-btn');
     const loginForm = document.getElementById('login-form');
@@ -11,98 +14,121 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerLinkContainer = document.getElementById('register-link-container');
     let currentRole = '';
 
-    console.log("Index.js loaded");
-
     // Role Buttons
-    document.querySelectorAll('.role-btn').forEach(btn => {
+    const roleBtns = document.querySelectorAll('.role-btn');
+    console.log("Found role buttons:", roleBtns.length);
+
+    roleBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             currentRole = btn.dataset.role;
-            console.log("Role selected:", currentRole);
+            console.log("Role button clicked:", currentRole);
             openModal(currentRole);
         });
     });
 
     // Close Modal
-    closeBtn.addEventListener('click', closeModal);
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
     window.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
 
     function openModal(role) {
+        console.log("Opening modal for role:", role);
+        if (!modal) {
+            console.error("Modal element not found!");
+            return;
+        }
         modal.classList.remove('hidden');
-        modalTitle.textContent = `${role.charAt(0).toUpperCase() + role.slice(1)} Login`;
-        errorMessage.textContent = '';
-        loginForm.reset();
+        // Force display block if classList remove hidden isn't enough (though CSS should handle it)
+        modal.style.display = 'flex';
 
-        if (role === 'patient') {
-            registerLinkContainer.classList.remove('hidden');
-        } else {
-            registerLinkContainer.classList.add('hidden');
+        if (modalTitle) modalTitle.textContent = `${role.charAt(0).toUpperCase() + role.slice(1)} Login`;
+        if (errorMessage) errorMessage.textContent = '';
+        if (loginForm) loginForm.reset();
+
+        if (registerLinkContainer) {
+            if (role === 'patient') {
+                registerLinkContainer.classList.remove('hidden');
+                registerLinkContainer.style.display = 'block';
+            } else {
+                registerLinkContainer.classList.add('hidden');
+                registerLinkContainer.style.display = 'none';
+            }
         }
     }
 
     function closeModal() {
-        modal.classList.add('hidden');
+        console.log("Closing modal");
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+        }
         currentRole = '';
     }
 
     // Login Form Submit
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        console.log("Login form submitted");
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log("Login form submitted");
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-        errorMessage.textContent = 'Logging in...';
+            if (errorMessage) errorMessage.textContent = 'Logging in...';
 
-        try {
-            let endpoint = '';
-            let body = {};
+            try {
+                let endpoint = '';
+                let body = {};
 
-            if (currentRole === 'admin') {
-                endpoint = '/admin/login';
-                body = { username: email, password: password };
-            } else if (currentRole === 'doctor') {
-                endpoint = '/doctor/login';
-                body = { email: email, password: password };
-            } else if (currentRole === 'patient') {
-                endpoint = '/patient/login';
-                body = { email: email, password: password };
-            }
-
-            console.log(`Attempting login to: ${API_BASE_URL}${endpoint}`);
-
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-
-            console.log("Response status:", response.status);
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Login successful", data);
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('userRole', currentRole);
-
-                // Redirect based on role
                 if (currentRole === 'admin') {
-                    window.location.href = 'pages/adminDashboard.html';
+                    endpoint = '/admin/login';
+                    body = { username: email, password: password };
                 } else if (currentRole === 'doctor') {
-                    window.location.href = 'pages/doctorDashboard.html';
+                    endpoint = '/doctor/login';
+                    body = { email: email, password: password };
                 } else if (currentRole === 'patient') {
-                    window.location.href = 'pages/patientDashboard.html';
+                    endpoint = '/patient/login';
+                    body = { email: email, password: password };
                 }
-            } else {
-                const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
-                console.error("Login failed:", errorData);
-                errorMessage.textContent = errorData.message || 'Login failed';
+
+                console.log(`Attempting login to: ${API_BASE_URL}${endpoint}`);
+
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                console.log("Response status:", response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Login successful", data);
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userRole', currentRole);
+
+                    // Redirect based on role
+                    if (currentRole === 'admin') {
+                        window.location.href = 'pages/adminDashboard.html';
+                    } else if (currentRole === 'doctor') {
+                        window.location.href = 'pages/doctorDashboard.html';
+                    } else if (currentRole === 'patient') {
+                        window.location.href = 'pages/patientDashboard.html';
+                    }
+                } else {
+                    const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
+                    console.error("Login failed:", errorData);
+                    if (errorMessage) errorMessage.textContent = errorData.message || 'Login failed';
+                }
+            } catch (error) {
+                console.error("Login error:", error);
+                if (errorMessage) errorMessage.textContent = 'An error occurred. Please try again.';
             }
-        } catch (error) {
-            console.error("Login error:", error);
-            errorMessage.textContent = 'An error occurred. Please try again.';
-        }
-    });
+        });
+    } else {
+        console.error("Login form not found!");
+    }
 });
 

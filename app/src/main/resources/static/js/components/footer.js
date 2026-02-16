@@ -7,7 +7,7 @@ function renderFooter() {
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-logo">
-                <img src="../assets/images/logo/logo.png" alt="Hospital CMS Logo">
+                <img src="/assets/images/logo/logo.png" alt="Hospital CMS Logo">
                 <p>© Copyright 2025. All Rights Reserved by Hospital CMS.</p>
             </div>
             
