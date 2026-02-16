@@ -1,5 +1,7 @@
 // index.js
 
+import { API_BASE_URL } from './config/config.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('login-modal');
     const closeBtn = document.querySelector('.close-btn');
@@ -9,10 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerLinkContainer = document.getElementById('register-link-container');
     let currentRole = '';
 
+    console.log("Index.js loaded");
+
     // Role Buttons
     document.querySelectorAll('.role-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             currentRole = btn.dataset.role;
+            console.log("Role selected:", currentRole);
             openModal(currentRole);
         });
     });
@@ -44,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Login Form Submit
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        console.log("Login form submitted");
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
 
@@ -64,32 +70,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 body = { email: email, password: password };
             }
 
-            const response = await fetch(endpoint, {
+            console.log(`Attempting login to: ${API_BASE_URL}${endpoint}`);
+
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
 
+            console.log("Response status:", response.status);
+
             if (response.ok) {
                 const data = await response.json();
+                console.log("Login successful", data);
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('userRole', currentRole); // Use util.js function if available globally via window or just set item
+                localStorage.setItem('userRole', currentRole);
 
                 // Redirect based on role
                 if (currentRole === 'admin') {
-                    window.location.href = 'pages/adminDashboard.html'; // Assuming this page exists or we use render.js logic
+                    window.location.href = 'pages/adminDashboard.html';
                 } else if (currentRole === 'doctor') {
                     window.location.href = 'pages/doctorDashboard.html';
                 } else if (currentRole === 'patient') {
                     window.location.href = 'pages/patientDashboard.html';
                 }
             } else {
-                const errorData = await response.json(); // May be text or json
+                const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
+                console.error("Login failed:", errorData);
                 errorMessage.textContent = errorData.message || 'Login failed';
             }
         } catch (error) {
-            console.error(error);
+            console.error("Login error:", error);
             errorMessage.textContent = 'An error occurred. Please try again.';
         }
     });
 });
+
