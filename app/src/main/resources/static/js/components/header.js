@@ -9,7 +9,7 @@ function renderHeader() {
     headerDiv.innerHTML = `
             <header class="header">
                 <div class="logo-link">
-                    <img src="../assets/images/logo/Logo.png" alt="Hospital CRM Logo" class="logo-img">
+                    <img src="../assets/images/logo/logo.png" alt="Hospital CRM Logo" class="logo-img">
                     <span class="logo-title">Hospital CMS</span>
                 </div>
             </header>`;
