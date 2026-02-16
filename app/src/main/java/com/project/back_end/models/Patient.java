@@ -32,7 +32,12 @@ public class Patient {
     @Pattern(regexp = "^[0-9]{10}$")
     private String phone;
     
-    // Address is NOT in the requirements based on previous view, so I omit it.
+    @NotNull
+    @Size(min = 5, max = 255)
+    private String address;
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
