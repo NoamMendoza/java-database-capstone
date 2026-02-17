@@ -3,7 +3,7 @@
   Logic for the doctor dashboard: managing appointments and availability.
 */
 
-import { getAllAppointments } from "./services/appointmentRecordService.js";
+import { getAllAppointments } from "../services/appointmentRecordService.js";
 
 // Helper to check token and redirect if missing
 function checkAuth() {
@@ -23,10 +23,6 @@ let selectedDate = formatDate(new Date());
 
 async function loadAppointments(date) {
   const token = checkAuth();
-  // Assuming backend endpoint needs doctorId? Or does token identify the doctor?
-  // DoctorServices usually implies token identifies user.
-  // However, getAllAppointments signature is (date, patientName, token)
-
   const tableBody = document.getElementById("appointmentTableBody");
   if (!tableBody) return;
 
@@ -36,7 +32,10 @@ async function loadAppointments(date) {
     // filter by patientName if search bar has value
     const searchVal = document.getElementById("searchBar") ? document.getElementById("searchBar").value : "null";
 
-    const appointments = await getAllAppointments(date, searchVal || "null", token);
+    // Ensure "null" string is passed if searchVal is empty string
+    const safeSearchVal = searchVal.trim() === "" ? "null" : searchVal;
+
+    const appointments = await getAllAppointments(date, safeSearchVal, token);
 
     tableBody.innerHTML = "";
 
@@ -46,13 +45,19 @@ async function loadAppointments(date) {
     }
 
     appointments.forEach(app => {
+      // Handle potential differences in property names (e.g. backend DTO vs expected JS object)
+      // debugging: console.log(app);
+      const patientName = app.patientName || app.name || "Unknown";
+      const time = app.appointmentTime || app.time || "N/A";
+      const details = app.patientContent || "No details";
+
       const row = `
                 <tr>
-                    <td>${app.patientName}</td> <!-- Assuming appointment object structure -->
-                    <td>${app.time}</td>
-                    <td>${app.patientContent || "No details"}</td> <!-- or other fields -->
+                    <td>${patientName}</td>
+                    <td>${time}</td>
+                    <td>${details}</td>
                     <td>
-                        <button onclick="window.location.href='patientRecord.html?id=${app.id}'">View Record</button>
+                        <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="window.location.href='patientRecord.html?id=${app.id || ''}'">View Record</button>
                     </td>
                 </tr>
             `;

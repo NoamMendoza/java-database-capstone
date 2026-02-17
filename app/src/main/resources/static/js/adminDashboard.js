@@ -3,11 +3,8 @@
   Logic for the admin dashboard: managing doctors (add, delete, filter).
 */
 
-import { getDoctors, deleteDoctor, saveDoctor, filterDoctors } from "./services/doctorServices.js";
-import { openModal, closeModal } from "./index.js"; // Or wherever utility modal logic is, if not global. 
-// Actually openModal is global in index.js for logins, but admin dashboard has its own "Add Doctor" modal.
-// We should check if we can reuse or need a local openModal. 
-// Assuming openModal is available globally or we implement a simple one here.
+import { getDoctors, deleteDoctor, saveDoctor, filterDoctors } from "../services/doctorServices.js";
+import { createDoctorCard } from "../components/doctorCard.js";
 
 // Helper to check token
 function checkAuth() {
@@ -19,25 +16,9 @@ function checkAuth() {
   return token;
 }
 
-// Function to create a doctor card HTML string
-function createDoctorCard(doctor) {
-  return `
-    <div class="doctor-card">
-      <div class="doctor-info">
-        <h3>${doctor.name}</h3>
-        <p><strong>Specialty:</strong> ${doctor.specialty}</p>
-        <p><strong>Email:</strong> ${doctor.email}</p>
-        <p><strong>Phone:</strong> ${doctor.phone}</p>
-      </div>
-      <div class="card-actions">
-        <!-- Assuming we pass ID and Token to delete -->
-        <button onclick="handleDelete(${doctor.id})">Delete</button>
-      </div>
-    </div>
-  `;
-}
-
-// Global function to handle delete, attached to window to be callable from HTML string
+// Global function to handle delete, attached to window to be callable from HTML string if needed, 
+// but createDoctorCard component handles it internally now. 
+// Keeping it just in case, but unexpected if component does the job.
 window.handleDelete = async function (id) {
   const token = checkAuth();
   if (!token) return;
@@ -52,24 +33,31 @@ window.handleDelete = async function (id) {
 };
 
 async function loadDoctorCards() {
-  const doctors = await getDoctors();
-  const content = document.getElementById("content");
-  if (!content) return;
+  try {
+    const doctors = await getDoctors();
+    const content = document.getElementById("content");
+    if (!content) return;
 
-  content.innerHTML = "";
+    content.innerHTML = "";
 
-  if (doctors.length === 0) {
-    content.innerHTML = "<p>No doctors found.</p>";
-    return;
+    if (!doctors || doctors.length === 0) {
+      content.innerHTML = "<p>No doctors found.</p>";
+      return;
+    }
+
+    doctors.forEach(doc => {
+      const card = createDoctorCard(doc); // Returns DOM element
+      content.appendChild(card);
+    });
+  } catch (err) {
+    console.error("Error loading cards:", err);
   }
-
-  doctors.forEach(doc => {
-    content.innerHTML += createDoctorCard(doc);
-  });
 }
 
 // Event Listeners
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("adminDashboard.js loaded");
+
   // Initial Load
   loadDoctorCards();
 
@@ -77,19 +65,36 @@ document.addEventListener("DOMContentLoaded", () => {
   const addDoctorBtn = document.getElementById("addDocBtn");
   if (addDoctorBtn) {
     addDoctorBtn.addEventListener("click", () => {
-      // Logic to open Add Doctor Modal
+      console.log("Add Doctor Clicked");
       const modal = document.getElementById("addDoctorModal");
-      if (modal) modal.style.display = "block";
+      if (modal) {
+        modal.style.display = "flex";
+        modal.classList.remove('hidden'); // Ensure no hidden class conflicts
+      }
     });
+  } else {
+    console.error("addDocBtn not found");
   }
 
-  // Close Modal Button (assuming standard class close)
+  // Close Modal Button
   const closeBtns = document.querySelectorAll(".close");
   closeBtns.forEach(btn => {
     btn.addEventListener("click", () => {
-      const modal = document.getElementById("addDoctorModal"); // or generic closest modal
-      if (modal) modal.style.display = "none";
+      const modal = document.getElementById("addDoctorModal");
+      if (modal) {
+        modal.style.display = "none";
+        modal.classList.add('hidden');
+      }
     });
+  });
+
+  // Windows click to close
+  window.addEventListener('click', (e) => {
+    const modal = document.getElementById("addDoctorModal");
+    if (e.target === modal) {
+      modal.style.display = "none";
+      modal.classList.add('hidden');
+    }
   });
 
   // Add Doctor Form Submit
@@ -112,7 +117,11 @@ document.addEventListener("DOMContentLoaded", () => {
       alert(result.message);
 
       if (result.success) {
-        document.getElementById("addDoctorModal").style.display = "none";
+        const modal = document.getElementById("addDoctorModal");
+        if (modal) {
+          modal.style.display = "none";
+          modal.classList.add('hidden');
+        }
         addDoctorForm.reset();
         loadDoctorCards();
       }
@@ -126,25 +135,23 @@ document.addEventListener("DOMContentLoaded", () => {
   async function handleFilter() {
     const name = document.getElementById("searchBar").value;
     const specialty = document.getElementById("specialtyFilter") ? document.getElementById("specialtyFilter").value : null;
-    // Time filter implementation depends on UI (e.g., input type time or select)
-    // Assuming a simple text or null for now based on typical requirements
 
+    // Check if filterDoctors expects null or strings
     const filteredDocs = await filterDoctors(name, null, specialty);
-    renderDoctorCards(filteredDocs);
+
+    // content ref
+    const content = document.getElementById("content");
+    content.innerHTML = "";
+
+    if (filteredDocs.length === 0) {
+      content.innerHTML = "<p>No doctors matching criteria.</p>";
+    } else {
+      filteredDocs.forEach(doc => {
+        content.appendChild(createDoctorCard(doc));
+      });
+    }
   }
 
   if (searchBar) searchBar.addEventListener("input", handleFilter);
   filterSelects.forEach(select => select.addEventListener("change", handleFilter));
 });
-
-function renderDoctorCards(doctors) {
-  const content = document.getElementById("content");
-  content.innerHTML = "";
-  if (doctors.length === 0) {
-    content.innerHTML = "<p>No doctors matching criteria.</p>";
-  } else {
-    doctors.forEach(doc => {
-      content.innerHTML += createDoctorCard(doc);
-    });
-  }
-}
