@@ -120,7 +120,7 @@ window.loginPatient = async function () {
     if (response.ok) {
       const result = await response.json();
       console.log(result);
-      selectRole('loggedPatient');
+      localStorage.setItem('userRole', 'patient');
       localStorage.setItem('token', result.token)
       window.location.href = '/pages/loggedPatientDashboard.html';
     } else {

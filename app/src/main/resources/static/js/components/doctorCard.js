@@ -80,7 +80,7 @@ export function createDoctorCard(doctor) {
 
       // Check strictly for patient role or if token exists (logic choice)
       // Here: Only logged-in patients can book.
-      if (!token || userRole !== 'patient') {
+      if (!token || (userRole !== 'patient' && userRole !== 'loggedPatient')) {
         alert("Please log in as a patient to book an appointment.");
         // Optionally redirect to login
         return;

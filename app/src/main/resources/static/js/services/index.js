@@ -115,12 +115,12 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem('userRole', currentRole);
 
           // Redirect based on role
-          if (currentRole === 'admin') {
+          if (currentRole === "admin") {
             window.location.href = `/adminDashboard/${data.token}`;
-          } else if (currentRole === 'doctor') {
+          } else if (currentRole === "doctor") {
             window.location.href = `/doctorDashboard/${data.token}`;
-          } else if (currentRole === 'patient') {
-            window.location.href = 'pages/patientDashboard.html';
+          } else if (currentRole === "patient") {
+            window.location.href = "/pages/loggedPatientDashboard.html";
           }
         } else {
           const errorData = await response.json().catch(() => ({ message: 'Login failed' }));

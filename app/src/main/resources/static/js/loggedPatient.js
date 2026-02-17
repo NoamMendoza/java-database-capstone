@@ -1,13 +1,16 @@
-// loggedPatient.js 
-import { getDoctors } from './services/doctorServices.js';
-import { createDoctorCard } from './components/doctorCard.js';
-import { filterDoctors } from './services/doctorServices.js';
-import { bookAppointment } from './services/appointmentRecordService.js';
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  loadDoctorCards();
-});
+// No changes needed if it doesn't set role. Checking content again.
+// Step 395 showed loggedPatient.js. It does NOT set role. It just loads cards. 
+// However, I should ensure `createDoctorCard` works. 
+// I already updated `doctorCard.js` to accept 'patient' or 'loggedPatient'.
+// But I also updated `patientDashboard.js` to set 'patient'.
+// So `loggedPatient.js` just needs to work with `doctorCard.js`.
+// I will verify if `loggedPatient.js` has any other logic that needs update.
+// It imports `bookAppointment`. 
+// It exports `showBookingOverlay`.
+// Wait, I moved `showBookingOverlay` to `bookingModal.js`.
+// So `loggedPatient.js` should NO LONGER export `showBookingOverlay`.
+// And `loggedPatient.js` probably doesn't need to import `bookAppointment` if it doesn't use it directly anymore (logic moved to modal).
+// Let's clean up `loggedPatient.js`.
 
 function loadDoctorCards() {
   getDoctors()
