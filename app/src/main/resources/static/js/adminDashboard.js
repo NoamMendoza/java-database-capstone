@@ -55,8 +55,8 @@ async function loadDoctorCards() {
 }
 
 // Event Listeners
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("adminDashboard.js loaded");
+function initDashboard() {
+  console.log("adminDashboard.js initializing...");
 
   // Initial Load
   loadDoctorCards();
@@ -64,16 +64,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // Add Doctor Button
   const addDoctorBtn = document.getElementById("addDocBtn");
   if (addDoctorBtn) {
-    addDoctorBtn.addEventListener("click", () => {
+    addDoctorBtn.addEventListener("click", (e) => {
+      e.preventDefault(); // Just in case
       console.log("Add Doctor Clicked");
       const modal = document.getElementById("addDoctorModal");
       if (modal) {
-        modal.style.display = "flex";
-        modal.classList.remove('hidden'); // Ensure no hidden class conflicts
+        modal.style.display = "flex"; // Or block
+        modal.classList.remove('hidden');
+      } else {
+        console.error("Modal 'addDoctorModal' not found in DOM");
       }
     });
   } else {
-    console.error("addDocBtn not found");
+    console.error("Button 'addDocBtn' not found in DOM");
   }
 
   // Close Modal Button
@@ -107,13 +110,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const name = document.getElementById("docName").value;
       const email = document.getElementById("docEmail").value;
-      const phone = document.getElementById("docPhone").value;
+      const rawPhone = document.getElementById("docPhone") ? document.getElementById("docPhone").value : "";
       const specialty = document.getElementById("docSpecialty").value;
       const password = document.getElementById("docPassword").value;
 
-      const doctor = { name, email, phone, specialty, password };
+      // Validation
+      const phone = rawPhone.replace(/\D/g, '');
+      if (phone.length !== 10) {
+        alert("Phone number must be exactly 10 digits.");
+        return;
+      }
+      if (password.length < 6) {
+        alert("Password must be at least 6 characters.");
+        return;
+      }
 
+      // Default times
+      const availableTimes = [
+        "09:00-10:00", "10:00-11:00", "11:00-12:00",
+        "14:00-15:00", "15:00-16:00", "16:00-17:00"
+      ];
+
+      const doctor = { name, email, phone, specialty, password, availableTimes };
+
+      console.log("Submitting doctor:", doctor);
       const result = await saveDoctor(doctor, token);
+      console.log("Save result:", result);
+
       alert(result.message);
 
       if (result.success) {
@@ -136,10 +159,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const name = document.getElementById("searchBar").value;
     const specialty = document.getElementById("specialtyFilter") ? document.getElementById("specialtyFilter").value : null;
 
-    // Check if filterDoctors expects null or strings
     const filteredDocs = await filterDoctors(name, null, specialty);
 
-    // content ref
     const content = document.getElementById("content");
     content.innerHTML = "";
 
@@ -154,4 +175,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (searchBar) searchBar.addEventListener("input", handleFilter);
   filterSelects.forEach(select => select.addEventListener("change", handleFilter));
-});
+}
+
+// Run init
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initDashboard);
+} else {
+  // DOM already loaded
+  initDashboard();
+}
