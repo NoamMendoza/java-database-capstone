@@ -6,7 +6,7 @@ const PATIENT_API = API_BASE_URL + '/patient'
 //For creating a patient in db
 export async function patientSignup(data) {
   try {
-    const response = await fetch(`${PATIENT_API}`,
+    const response = await fetch(`${PATIENT_API}/register`,
       {
         method: "POST",
         headers: {
@@ -44,9 +44,16 @@ export async function patientLogin(data) {
 // For getting patient data (name ,id , etc ). Used in booking appointments
 export async function getPatientData(token) {
   try {
-    const response = await fetch(`${PATIENT_API}/${token}`);
-    const data = await response.json();
-    if (response.ok) return data.patient;
+    const response = await fetch(`${PATIENT_API}/details/${token}`);
+    if (response.ok) {
+      const data = await response.json();
+      // Backend returns the patient object directly usually, but logic says data.patient?
+      // Let's check PatientController: return ResponseEntity.ok(patient); 
+      // So validation: const data = await response.json(); return data; 
+      // BUT current code says return data.patient;
+      // If backend returns Patient object, then 'data' IS the patient.
+      return data;
+    }
     return null;
   } catch (error) {
     console.error("Error fetching patient details:", error);
@@ -57,11 +64,16 @@ export async function getPatientData(token) {
 // the Backend API for fetching the patient record(visible in Doctor Dashboard) and Appointments (visible in Patient Dashboard) are same based on user(patient/doctor).
 export async function getPatientAppointments(id, token, user) {
   try {
-    const response = await fetch(`${PATIENT_API}/${id}/${user}/${token}`);
+    // Backend expects /appointments/{patientId}/{token}
+    const response = await fetch(`${PATIENT_API}/appointments/${id}/${token}`);
     const data = await response.json();
-    console.log(data.appointments)
+    console.log(data); // Debug
     if (response.ok) {
-      return data.appointments;
+      // Backend (PatientController) returns patientService.getPatientAppointment(patientId).
+      // If that returns a list, then data is the list. 
+      // If it returns an object with 'appointments' field, then data.appointments.
+      // Assuming it returns list of appointments based on method name getPatientAppointment (singular?) but likely plural needed.
+      return data;
     }
     return null;
   }
