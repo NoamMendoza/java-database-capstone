@@ -1,16 +1,11 @@
-// No changes needed if it doesn't set role. Checking content again.
-// Step 395 showed loggedPatient.js. It does NOT set role. It just loads cards. 
-// However, I should ensure `createDoctorCard` works. 
-// I already updated `doctorCard.js` to accept 'patient' or 'loggedPatient'.
-// But I also updated `patientDashboard.js` to set 'patient'.
-// So `loggedPatient.js` just needs to work with `doctorCard.js`.
-// I will verify if `loggedPatient.js` has any other logic that needs update.
-// It imports `bookAppointment`. 
-// It exports `showBookingOverlay`.
-// Wait, I moved `showBookingOverlay` to `bookingModal.js`.
-// So `loggedPatient.js` should NO LONGER export `showBookingOverlay`.
-// And `loggedPatient.js` probably doesn't need to import `bookAppointment` if it doesn't use it directly anymore (logic moved to modal).
-// Let's clean up `loggedPatient.js`.
+// loggedPatient.js 
+import { getDoctors } from './services/doctorServices.js';
+import { createDoctorCard } from './components/doctorCard.js';
+import { filterDoctors } from './services/doctorServices.js';
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadDoctorCards();
+});
 
 function loadDoctorCards() {
   getDoctors()
@@ -28,64 +23,7 @@ function loadDoctorCards() {
     });
 }
 
-export function showBookingOverlay(e, doctor, patient) {
-  const button = e.target;
-  const rect = button.getBoundingClientRect();
-  console.log(patient.name)
-  console.log(patient)
-  const ripple = document.createElement("div");
-  ripple.classList.add("ripple-overlay");
-  ripple.style.left = `${e.clientX}px`;
-  ripple.style.top = `${e.clientY}px`;
-  document.body.appendChild(ripple);
-
-  setTimeout(() => ripple.classList.add("active"), 50);
-
-  const modalApp = document.createElement("div");
-  modalApp.classList.add("modalApp");
-
-  modalApp.innerHTML = `
-    <h2>Book Appointment</h2>
-    <input class="input-field" type="text" value="${patient.name}" disabled />
-    <input class="input-field" type="text" value="${doctor.name}" disabled />
-    <input class="input-field" type="text" value="${doctor.specialty}" disabled/>
-    <input class="input-field" type="email" value="${doctor.email}" disabled/>
-    <input class="input-field" type="date" id="appointment-date" />
-    <select class="input-field" id="appointment-time">
-      <option value="">Select time</option>
-      ${doctor.availableTimes.map(t => `<option value="${t}">${t}</option>`).join('')}
-    </select>
-    <button class="confirm-booking">Confirm Booking</button>
-  `;
-
-  document.body.appendChild(modalApp);
-
-  setTimeout(() => modalApp.classList.add("active"), 600);
-
-  modalApp.querySelector(".confirm-booking").addEventListener("click", async () => {
-    const date = modalApp.querySelector("#appointment-date").value;
-    const time = modalApp.querySelector("#appointment-time").value;
-    const token = localStorage.getItem("token");
-    const startTime = time.split('-')[0];
-    const appointment = {
-      doctor: { id: doctor.id },
-      patient: { id: patient.id },
-      appointmentTime: `${date}T${startTime}:00`,
-      status: 0
-    };
-
-
-    const { success, message } = await bookAppointment(appointment, token);
-
-    if (success) {
-      alert("Appointment Booked successfully");
-      ripple.remove();
-      modalApp.remove();
-    } else {
-      alert("❌ Failed to book an appointment :: " + message);
-    }
-  });
-}
+// showBookingOverlay removed (moved to components/bookingModal.js)
 
 
 
