@@ -46,7 +46,7 @@ function filterDoctorsOnChange() {
 
   filterDoctors(name, time, specialty)
     .then(response => {
-      const doctors = response.doctors;
+      const doctors = response;
       const contentDiv = document.getElementById("content");
       contentDiv.innerHTML = "";
 
