@@ -23,10 +23,10 @@ export async function bookAppointment(appointment, token) {
       body: JSON.stringify(appointment)
     });
 
-    const data = await response.json();
+    const message = await response.text();
     return {
       success: response.ok,
-      message: data.message || "Something went wrong"
+      message: message || (response.ok ? "Appointment booked successfully" : "Something went wrong")
     };
   } catch (error) {
     console.error("Error while booking appointment:", error);

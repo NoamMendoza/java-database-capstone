@@ -34,4 +34,26 @@ public class AppointmentController {
         if (result == -1) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found");
         return ResponseEntity.ok("Appointment canceled");
     }
+    @GetMapping("/{date}/{patientName}/{token}")
+    public ResponseEntity<?> getDoctorAppointments(@PathVariable String date, @PathVariable String patientName, @PathVariable String token) {
+        if (!service.validateToken(token, "doctor") && !service.validateToken(token, "admin")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+        }
+
+        com.project.back_end.models.Doctor doctor = service.getDoctorFromToken(token);
+        if (doctor == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Doctor not found");
+        }
+
+        java.time.LocalDate localDate = java.time.LocalDate.parse(date);
+        java.util.List<com.project.back_end.DTO.AppointmentDTO> appointments = appointmentService.getAppointments(doctor.getId(), localDate);
+
+        if (patientName != null && !patientName.equals("null") && !patientName.isEmpty()) {
+            appointments = appointments.stream()
+                    .filter(a -> a.getPatientName().toLowerCase().contains(patientName.toLowerCase()))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
+        return ResponseEntity.ok(appointments);
+    }
 }

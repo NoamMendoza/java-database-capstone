@@ -92,4 +92,9 @@ public class Service {
              return appointmentRepository.findByPatientId(patient.getId());
          }
     }
+    public Doctor getDoctorFromToken(String token) {
+        String email = tokenService.extractEmail(token);
+        if (email == null) return null;
+        return doctorRepository.findByEmail(email);
+    }
 }
