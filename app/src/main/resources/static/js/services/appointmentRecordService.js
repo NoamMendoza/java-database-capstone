@@ -15,7 +15,7 @@ export async function getAllAppointments(date, patientName, token) {
 
 export async function bookAppointment(appointment, token) {
   try {
-    const response = await fetch(`${APPOINTMENT_API}/${token}`, {
+    const response = await fetch(`${APPOINTMENT_API}/book/${token}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
