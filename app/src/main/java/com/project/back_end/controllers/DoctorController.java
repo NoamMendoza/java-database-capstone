@@ -40,6 +40,29 @@ public class DoctorController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/filter/{name}/{time}/{specialty}")
+    public ResponseEntity<Map<String, List<Doctor>>> filterDoctors(@PathVariable String name, @PathVariable String time, @PathVariable String specialty) {
+        List<Doctor> doctors;
+        boolean hasName = name != null && !name.equals("null") && !name.isEmpty();
+        boolean hasSpecialty = specialty != null && !specialty.equals("null") && !specialty.isEmpty();
+
+        // Time filter is currently not implemented in service fully, ignoring for now or just passing through if service supported it.
+        // Based on existing service methods:
+        if (hasName && hasSpecialty) {
+            doctors = doctorService.filterDoctorByNameAndSpecility(name, specialty);
+        } else if (hasName) {
+            doctors = doctorService.findDoctorByName(name);
+        } else if (hasSpecialty) {
+            doctors = doctorService.filterDoctorBySpecility(specialty);
+        } else {
+            doctors = doctorService.getDoctors();
+        }
+
+        Map<String, List<Doctor>> response = new HashMap<>();
+        response.put("doctors", doctors);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/save/{token}")
     public ResponseEntity<?> saveDoctor(@RequestBody Doctor doctor, @PathVariable String token) {
         if (!service.validateToken(token, "admin")) {
