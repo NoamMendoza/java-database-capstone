@@ -1,6 +1,4 @@
-// doctorCard.js
-
-import { overlay } from '../loggedPatient.js';
+import { showBookingOverlay } from './bookingModal.js';
 import { deleteDoctor } from '../services/doctorServices.js';
 import { getPatientData } from '../services/patientServices.js';
 
@@ -76,9 +74,12 @@ export function createDoctorCard(doctor) {
     bookBtn.textContent = 'Book Appointment';
     bookBtn.className = 'btn book-btn';
 
-    bookBtn.onclick = async () => {
+    // Pass the event object 'e' to the handler
+    bookBtn.onclick = async (e) => {
       const token = localStorage.getItem('token');
 
+      // Check strictly for patient role or if token exists (logic choice)
+      // Here: Only logged-in patients can book.
       if (!token || userRole !== 'patient') {
         alert("Please log in as a patient to book an appointment.");
         // Optionally redirect to login
@@ -88,11 +89,11 @@ export function createDoctorCard(doctor) {
       try {
         const patient = await getPatientData(token);
         if (patient) {
-          // Show overlay
-          if (typeof overlay === 'function') {
-            overlay(doctor, patient);
+          // Show overlay using imported function
+          if (typeof showBookingOverlay === 'function') {
+            showBookingOverlay(e, doctor, patient);
           } else {
-            console.error("Overlay function not found");
+            console.error("showBookingOverlay function not found");
             alert("Booking feature is currently unavailable.");
           }
         } else {
