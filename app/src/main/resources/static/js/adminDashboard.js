@@ -3,8 +3,8 @@
   Logic for the admin dashboard: managing doctors (add, delete, filter).
 */
 
-import { getDoctors, deleteDoctor, saveDoctor, filterDoctors } from "../services/doctorServices.js";
-import { createDoctorCard } from "../components/doctorCard.js";
+import { getDoctors, deleteDoctor, saveDoctor, filterDoctors } from "./services/doctorServices.js";
+import { createDoctorCard } from "./components/doctorCard.js";
 
 // Helper to check token
 function checkAuth() {

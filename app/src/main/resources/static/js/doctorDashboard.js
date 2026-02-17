@@ -3,7 +3,7 @@
   Logic for the doctor dashboard: managing appointments and availability.
 */
 
-import { getAllAppointments } from "../services/appointmentRecordService.js";
+import { getAllAppointments } from "./services/appointmentRecordService.js";
 
 // Helper to check token and redirect if missing
 function checkAuth() {
