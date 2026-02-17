@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/index.css">
+
+    <!-- Scripts -->
+    <script src="../js/config/config.js" type="module"></script>
+    <script src="../js/util.js" defer></script>
+    <script src="../js/render.js" defer></script>
+    <script src="../js/components/header.js" defer></script>
+    <script src="../js/components/footer.js" defer></script>
+    <script src="../js/services/doctorServices.js" type="module"></script>
+    <script src="../js/adminDashboard.js" defer type="module"></script>
+</head>
+
+<body>
+    <div id="header"></div>
+
+    <main>
+        <h1>Admin Dashboard</h1>
+
+        <div class="dashboard-controls">
+            <input type="text" id="searchBar" class="searchBar" placeholder="Search Doctors...">
+            <!-- Add filters if needed -->
+            <button id="addDocBtn" class="btn dashboard-btn">Add Doctor</button>
+        </div>
+
+        <div id="content" class="doctor-grid">
+            <!-- Doctor Cards will be rendered here -->
+        </div>
+    </main>
+
+    <!-- Add Doctor Modal -->
+    <div id="addDoctorModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Add New Doctor</h2>
+            <form id="addDoctorForm">
+                <input type="text" id="docName" placeholder="Full Name" required class="input-field">
+                <input type="email" id="docEmail" placeholder="Email" required class="input-field">
+                <input type="text" id="docPhone" placeholder="Phone" required class="input-field">
+                <input type="text" id="docSpecialty" placeholder="Specialty" required class="input-field">
+                <input type="password" id="docPassword" placeholder="Password" required class="input-field">
+                <button type="submit" class="btn">Save Doctor</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+</body>
+
+</html>

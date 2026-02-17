@@ -1,54 +1,100 @@
 /*
-  Import getAllAppointments to fetch appointments from the backend
-  Import createPatientRow to generate a table row for each patient appointment
-
-
-  Get the table body where patient rows will be added
-  Initialize selectedDate with today's date in 'YYYY-MM-DD' format
-  Get the saved token from localStorage (used for authenticated API calls)
-  Initialize patientName to null (used for filtering by name)
-
-
-  Add an 'input' event listener to the search bar
-  On each keystroke:
-    - Trim and check the input value
-    - If not empty, use it as the patientName for filtering
-    - Else, reset patientName to "null" (as expected by backend)
-    - Reload the appointments list with the updated filter
-
-
-  Add a click listener to the "Today" button
-  When clicked:
-    - Set selectedDate to today's date
-    - Update the date picker UI to match
-    - Reload the appointments for today
-
-
-  Add a change event listener to the date picker
-  When the date changes:
-    - Update selectedDate with the new value
-    - Reload the appointments for that specific date
-
-
-  Function: loadAppointments
-  Purpose: Fetch and display appointments based on selected date and optional patient name
-
-  Step 1: Call getAllAppointments with selectedDate, patientName, and token
-  Step 2: Clear the table body content before rendering new rows
-
-  Step 3: If no appointments are returned:
-    - Display a message row: "No Appointments found for today."
-
-  Step 4: If appointments exist:
-    - Loop through each appointment and construct a 'patient' object with id, name, phone, and email
-    - Call createPatientRow to generate a table row for the appointment
-    - Append each row to the table body
-
-  Step 5: Catch and handle any errors during fetch:
-    - Show a message row: "Error loading appointments. Try again later."
-
-
-  When the page is fully loaded (DOMContentLoaded):
-    - Call renderContent() (assumes it sets up the UI layout)
-    - Call loadAppointments() to display today's appointments by default
+  doctorDashboard.js
+  Logic for the doctor dashboard: managing appointments and availability.
 */
+
+import { getAllAppointments } from "./services/appointmentRecordService.js";
+
+// Helper to check token and redirect if missing
+function checkAuth() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "../index.html";
+  }
+  return token;
+}
+
+// Format date to YYYY-MM-DD
+function formatDate(date) {
+  return date.toISOString().split('T')[0];
+}
+
+let selectedDate = formatDate(new Date());
+
+async function loadAppointments(date) {
+  const token = checkAuth();
+  // Assuming backend endpoint needs doctorId? Or does token identify the doctor?
+  // DoctorServices usually implies token identifies user.
+  // However, getAllAppointments signature is (date, patientName, token)
+
+  const tableBody = document.getElementById("appointmentTableBody");
+  if (!tableBody) return;
+
+  tableBody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
+
+  try {
+    // filter by patientName if search bar has value
+    const searchVal = document.getElementById("searchBar") ? document.getElementById("searchBar").value : "null";
+
+    const appointments = await getAllAppointments(date, searchVal || "null", token);
+
+    tableBody.innerHTML = "";
+
+    if (!appointments || appointments.length === 0) {
+      tableBody.innerHTML = "<tr><td colspan='4'>No Appointments found for today.</td></tr>";
+      return;
+    }
+
+    appointments.forEach(app => {
+      const row = `
+                <tr>
+                    <td>${app.patientName}</td> <!-- Assuming appointment object structure -->
+                    <td>${app.time}</td>
+                    <td>${app.patientContent || "No details"}</td> <!-- or other fields -->
+                    <td>
+                        <button onclick="window.location.href='patientRecord.html?id=${app.id}'">View Record</button>
+                    </td>
+                </tr>
+            `;
+      tableBody.innerHTML += row;
+    });
+
+  } catch (error) {
+    console.error("Error loading appointments:", error);
+    tableBody.innerHTML = "<tr><td colspan='4'>Error loading appointments.</td></tr>";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Initial Load - Today
+  loadAppointments(selectedDate);
+
+  // Date Picker
+  const datePicker = document.getElementById("datePicker");
+  if (datePicker) {
+    datePicker.value = selectedDate;
+    datePicker.addEventListener("change", (e) => {
+      selectedDate = e.target.value;
+      loadAppointments(selectedDate);
+    });
+  }
+
+  // Search Bar
+  const searchBar = document.getElementById("searchBar");
+  if (searchBar) {
+    searchBar.addEventListener("input", () => {
+      loadAppointments(selectedDate); // Re-fetch with new search term (and current date)
+    });
+  }
+
+  // "Today" Button
+  const todayBtn = document.getElementById("todayBtn");
+  if (todayBtn) {
+    todayBtn.addEventListener("click", () => {
+      const today = formatDate(new Date());
+      selectedDate = today;
+      if (datePicker) datePicker.value = today;
+      loadAppointments(today);
+    });
+  }
+});

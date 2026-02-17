@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+
+    <!-- Scripts -->
+    <script src="../js/config/config.js" type="module"></script>
+    <script src="../js/util.js" defer></script>
+    <script src="../js/render.js" defer></script>
+    <script src="../js/components/header.js" defer></script>
+    <script src="../js/components/footer.js" defer></script>
+    <script src="../js/services/appointmentRecordService.js" type="module"></script>
+    <script src="../js/doctorDashboard.js" defer type="module"></script>
+</head>
+
+<body>
+    <div id="header"></div>
+
+    <main>
+        <h1>Doctor Dashboard</h1>
+
+        <div class="dashboard-controls">
+            <div class="filter-wrapper">
+                <input type="date" id="datePicker" class="input-field">
+                <button id="todayBtn" class="btn dashboard-btn" style="margin-left: 10px;">Today</button>
+            </div>
+            <input type="text" id="searchBar" class="searchBar" placeholder="Search Patient...">
+        </div>
+
+        <div class="appointments-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Patient Name</th>
+                        <th>Time</th>
+                        <th>Details</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="appointmentTableBody">
+                    <!-- Rows will be populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div id="footer"></div>
+</body>
+
+</html>
